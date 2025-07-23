@@ -1,6 +1,6 @@
 use cfg_if::cfg_if;
 use std::fmt::{Display, Error, Formatter};
-use instant::{Instant, Duration};
+use instant::Instant;
 
 cfg_if! {
     if #[cfg(all(
@@ -9,6 +9,7 @@ cfg_if! {
         target_vendor = "unknown"
     ))] {
         use core::ops::Add;
+        use instant::Duration;
 
         #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
         struct DummyInstant(Duration);

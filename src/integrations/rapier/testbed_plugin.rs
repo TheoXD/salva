@@ -14,7 +14,7 @@ use rapier_testbed::{
 
 use crate::integrations::rapier::FluidsPipeline;
 use std::collections::HashMap;
-use instant::{Instant, Duration};
+use instant::Instant;
 use cfg_if::cfg_if;
 
 cfg_if! {
@@ -24,6 +24,7 @@ cfg_if! {
         target_vendor = "unknown"
     ))] {
         use core::ops::Add;
+        use instant::Duration;
 
         #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
         struct DummyInstant(Duration);
