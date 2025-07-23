@@ -14,7 +14,7 @@ use rapier_testbed::{
 
 use crate::integrations::rapier::FluidsPipeline;
 use std::collections::HashMap;
-use instant::Instant;
+use instant::{Instant, Duration};
 use cfg_if::cfg_if;
 
 cfg_if! {

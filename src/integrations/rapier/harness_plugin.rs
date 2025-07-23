@@ -2,7 +2,7 @@ use super::FluidsPipeline;
 use rapier_testbed::harness::RunState;
 use rapier_testbed::physics::PhysicsEvents;
 use rapier_testbed::{HarnessPlugin, PhysicsState};
-use instant::Instant;
+use instant::{Instant, Duration};
 use cfg_if::cfg_if;
 
 cfg_if! {

@@ -1,6 +1,6 @@
 use cfg_if::cfg_if;
 use std::fmt::{Display, Error, Formatter};
-use instant::Instant;
+use instant::{Instant, Duration};
 
 cfg_if! {
     if #[cfg(all(
