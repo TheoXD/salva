@@ -14,6 +14,48 @@ use rapier_testbed::{
 
 use crate::integrations::rapier::FluidsPipeline;
 use std::collections::HashMap;
+use instant::Instant;
+use cfg_if::cfg_if;
+
+cfg_if! {
+    if #[cfg(all(
+        target_arch = "wasm32",
+        target_os = "unknown",
+        target_vendor = "unknown"
+    ))] {
+        use core::ops::Add;
+
+        #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
+        struct DummyInstant(Duration);
+
+        impl DummyInstant {
+            pub fn now() -> DummyInstant {
+                DummyInstant::zero()
+            }
+
+            const fn zero() -> DummyInstant {
+                DummyInstant(Duration::from_secs(0))
+            }
+        }
+
+        impl Add<Duration> for DummyInstant {
+            type Output = DummyInstant;
+
+            fn add(self, _rhs: Duration) -> DummyInstant {
+                DummyInstant::zero()
+            }
+        }
+
+        // Use dummy implementation for `Instant` on `wasm32`. The reason for this is
+        // that `Instant::now()` will always panic because time is currently not implemented
+        // on wasm32-unknown-unknown.
+        // See https://github.com/rust-lang/rust/blob/master/src/libstd/sys/wasm/time.rs
+        type InstantType = DummyInstant;
+    } else {
+        // Otherwise use `std::time::Instant`
+        type InstantType = Instant;
+    }
+}
 
 //FIXME: handle this with macros, or use bevy-inspectable-egui
 pub const FLUIDS_RENDERING_MAP: [(&str, FluidsRenderingMode); 3] = [
@@ -80,7 +122,7 @@ pub struct FluidsTestbedPlugin {
     /// Rendering mode of fluid particles
     pub fluids_rendering_mode: FluidsRenderingMode,
     callbacks: Vec<FluidCallback>,
-    step_time: web_time::Duration,
+    step_time: f64,
     fluids_pipeline: FluidsPipeline,
     f2sn: HashMap<FluidHandle, Vec<EntityWithGraphics>>,
     boundary2sn: HashMap<BoundaryHandle, Vec<EntityWithGraphics>>,
@@ -96,7 +138,7 @@ impl FluidsTestbedPlugin {
         Self {
             render_boundary_particles: false,
             fluids_rendering_mode: FluidsRenderingMode::StaticColor,
-            step_time: web_time::Duration::from_millis(0),
+            step_time: 0.0,
             callbacks: Vec::new(),
             fluids_pipeline: FluidsPipeline::new(0.025, 2.0),
             f2sn: HashMap::new(),
@@ -330,7 +372,7 @@ impl TestbedPlugin for FluidsTestbedPlugin {
     }
 
     fn step(&mut self, physics: &mut PhysicsState) {
-        let step_time = web_time::Instant::now();
+        let step_time = Instant::now();
         let dt = physics.integration_parameters.dt;
         self.fluids_pipeline.step(
             &physics.gravity,
@@ -339,7 +381,7 @@ impl TestbedPlugin for FluidsTestbedPlugin {
             &mut physics.bodies,
         );
 
-        self.step_time = web_time::Instant::now() - step_time;
+        self.step_time = (Instant::now() - step_time).as_secs_f64();
     }
 
     fn draw(
@@ -506,6 +548,6 @@ impl TestbedPlugin for FluidsTestbedPlugin {
     }
 
     fn profiling_string(&self) -> String {
-        format!("Fluids: {:.2}ms", self.step_time.as_millis())
+        format!("Fluids: {:.2}ms", self.step_time)
     }
 }
