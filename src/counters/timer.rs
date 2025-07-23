@@ -4,8 +4,8 @@ use std::fmt::{Display, Error, Formatter};
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Timer {
     enabled: bool,
-    time: f64,
-    start: Option<f64>,
+    time: web_time::Duration,
+    start: Option<web_time::Instant>,
 }
 
 impl Timer {
@@ -13,7 +13,7 @@ impl Timer {
     pub fn new() -> Self {
         Timer {
             enabled: false,
-            time: 0.0,
+            time: web_time::Duration::from_millis(0),
             start: None,
         }
     }
@@ -30,14 +30,14 @@ impl Timer {
 
     /// Resets the timer to 0.
     pub fn reset(&mut self) {
-        self.time = 0.0
+        self.time = web_time::Duration::from_millis(0);
     }
 
     /// Start the timer.
     pub fn start(&mut self) {
         if self.enabled {
-            self.time = 0.0;
-            self.start = Some(instant::now());
+            self.time = web_time::Duration::from_millis(0);
+            self.start = Some(web_time::Instant::now());
         }
     }
 
@@ -45,7 +45,7 @@ impl Timer {
     pub fn pause(&mut self) {
         if self.enabled {
             if let Some(start) = self.start {
-                self.time += instant::now() - start;
+                self.time += web_time::Instant::now() - start;
             }
             self.start = None;
         }
@@ -54,18 +54,18 @@ impl Timer {
     /// Resume the timer.
     pub fn resume(&mut self) {
         if self.enabled {
-            self.start = Some(instant::now());
+            self.start = Some(web_time::Instant::now());
         }
     }
 
     /// The measured time between the last `.start()` and `.pause()` calls.
     pub fn time(&self) -> f64 {
-        self.time
+        self.time.as_millis() as f64 / 1000.0
     }
 }
 
 impl Display for Timer {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
-        write!(f, "{}s", self.time)
+        write!(f, "{}s", self.time.as_secs())
     }
 }

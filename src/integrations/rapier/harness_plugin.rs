@@ -10,7 +10,7 @@ pub type FluidCallback =
 /// A plugin for rendering fluids with the Rapier harness.
 pub struct FluidsHarnessPlugin {
     callbacks: Vec<FluidCallback>,
-    step_time: f64,
+    step_time: web_time::Duration,
     fluids_pipeline: FluidsPipeline,
 }
 
@@ -19,7 +19,7 @@ impl FluidsHarnessPlugin {
     pub fn new() -> Self {
         Self {
             callbacks: Vec::new(),
-            step_time: 0.0,
+            step_time: web_time::Duration::from_millis(0),
             fluids_pipeline: FluidsPipeline::new(0.025, 2.0),
         }
     }
@@ -57,7 +57,7 @@ impl HarnessPlugin for FluidsHarnessPlugin {
     }
 
     fn step(&mut self, physics: &mut PhysicsState, _run_state: &RunState) {
-        let step_time = instant::now();
+        let step_time = web_time::Instant::now();
         let dt = physics.integration_parameters.dt;
         self.fluids_pipeline.step(
             &physics.gravity,
@@ -66,10 +66,10 @@ impl HarnessPlugin for FluidsHarnessPlugin {
             &mut physics.bodies,
         );
 
-        self.step_time = instant::now() - step_time;
+        self.step_time = web_time::Instant::now() - step_time;
     }
 
     fn profiling_string(&self) -> String {
-        format!("Fluids: {:.2}ms", self.step_time)
+        format!("Fluids: {:.2}ms", self.step_time.as_millis())
     }
 }

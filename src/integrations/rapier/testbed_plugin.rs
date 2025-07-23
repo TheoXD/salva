@@ -80,7 +80,7 @@ pub struct FluidsTestbedPlugin {
     /// Rendering mode of fluid particles
     pub fluids_rendering_mode: FluidsRenderingMode,
     callbacks: Vec<FluidCallback>,
-    step_time: f64,
+    step_time: web_time::Duration,
     fluids_pipeline: FluidsPipeline,
     f2sn: HashMap<FluidHandle, Vec<EntityWithGraphics>>,
     boundary2sn: HashMap<BoundaryHandle, Vec<EntityWithGraphics>>,
@@ -96,7 +96,7 @@ impl FluidsTestbedPlugin {
         Self {
             render_boundary_particles: false,
             fluids_rendering_mode: FluidsRenderingMode::StaticColor,
-            step_time: 0.0,
+            step_time: web_time::Duration::from_millis(0),
             callbacks: Vec::new(),
             fluids_pipeline: FluidsPipeline::new(0.025, 2.0),
             f2sn: HashMap::new(),
@@ -330,7 +330,7 @@ impl TestbedPlugin for FluidsTestbedPlugin {
     }
 
     fn step(&mut self, physics: &mut PhysicsState) {
-        let step_time = instant::now();
+        let step_time = web_time::Instant::now();
         let dt = physics.integration_parameters.dt;
         self.fluids_pipeline.step(
             &physics.gravity,
@@ -339,7 +339,7 @@ impl TestbedPlugin for FluidsTestbedPlugin {
             &mut physics.bodies,
         );
 
-        self.step_time = instant::now() - step_time;
+        self.step_time = web_time::Instant::now() - step_time;
     }
 
     fn draw(
@@ -506,6 +506,6 @@ impl TestbedPlugin for FluidsTestbedPlugin {
     }
 
     fn profiling_string(&self) -> String {
-        format!("Fluids: {:.2}ms", self.step_time)
+        format!("Fluids: {:.2}ms", self.step_time.as_millis())
     }
 }
